@@ -33,6 +33,7 @@ import (
 	"github.com/GoogleContainerTools/kaniko/pkg/config"
 	"github.com/GoogleContainerTools/kaniko/pkg/util"
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
+	"github.com/moby/buildkit/frontend/dockerfile/linter"
 	"github.com/moby/buildkit/frontend/dockerfile/parser"
 	"github.com/pkg/errors"
 )
@@ -74,7 +75,7 @@ func baseImageIndex(currentStage int, stages []instructions.Stage) int {
 	currentStageBaseName := strings.ToLower(stages[currentStage].BaseName)
 
 	for i, stage := range stages {
-		if i > currentStage {
+		if i >= currentStage {
 			break
 		}
 		if stage.Name == currentStageBaseName {
@@ -91,7 +92,7 @@ func Parse(b []byte) ([]instructions.Stage, []instructions.ArgCommand, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	stages, metaArgs, err := instructions.Parse(p.AST)
+	stages, metaArgs, err := instructions.Parse(p.AST, &linter.Linter{})
 	if err != nil {
 		return nil, nil, err
 	}
